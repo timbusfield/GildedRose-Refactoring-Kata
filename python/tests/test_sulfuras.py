@@ -1,7 +1,5 @@
 import pytest
-
 from gilded_rose import GildedRose, Item
-
 
 SULFURAS = "Sulfuras, Hand of Ragnaros"
 

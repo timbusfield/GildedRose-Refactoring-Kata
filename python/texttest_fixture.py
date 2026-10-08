@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
 
 from gilded_rose import *
 
@@ -26,7 +24,7 @@ def main():
         print("name, sellIn, quality")
         for item in items:
             print(item)
-        print("")
+        print()
         GildedRose(items).update_quality()
 
 

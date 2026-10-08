@@ -2,6 +2,7 @@
 
 from enum import StrEnum
 
+
 class ItemName(StrEnum):
     SULFURAS = "Sulfuras, Hand of Ragnaros"
     AGED_BRIE = "Aged Brie"
@@ -18,7 +19,7 @@ PRE_SELL_IN_FACTOR = 1
 PAST_SELL_IN_FACTOR = 2
 
 
-class GildedRose(object):
+class GildedRose:
 
     def __init__(self, items):
         self.items = items
@@ -85,7 +86,7 @@ class Item:
     def __repr__(self):
         return "%s, %s, %s" % (self.name, self.sell_in, self.quality)
 
-class OriginalGildedRose(object):
+class OriginalGildedRose:
 
     def __init__(self, items):
         self.items = items
