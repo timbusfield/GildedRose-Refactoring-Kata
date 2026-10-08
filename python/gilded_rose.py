@@ -11,8 +11,9 @@ class ItemName(StrEnum):
 MINIUM_QUALITY = 0
 MAXIMUM_QUALITY = 50
 
-GENERIC_DEGRADE_FACTOR = 1
-CONJURED_DEGRADE_FACTOR = 2
+GENERIC_FACTOR = -1
+CONJURED_FACTOR = -2
+BRIE_FACTOR = 1
 PRE_SELL_IN_FACTOR = 1
 PAST_SELL_IN_FACTOR = 2
 
@@ -25,20 +26,19 @@ class GildedRose(object):
     def _update_sell_in(self, item):
         item.sell_in = item.sell_in - 1
 
-    def _update_degrading_item(self, item, item_type_factor: int = GENERIC_DEGRADE_FACTOR):
+    def _update_accelerating_item(self, item, item_type_factor: int = GENERIC_FACTOR):
         self._update_sell_in(item)
         item_stage_factor = PRE_SELL_IN_FACTOR if item.sell_in >= 0 else PAST_SELL_IN_FACTOR
-        item.quality = max(MINIUM_QUALITY, item.quality - (item_type_factor * item_stage_factor))
+        item.quality = min(MAXIMUM_QUALITY,max(MINIUM_QUALITY, item.quality + (item_type_factor * item_stage_factor)))
 
     def _update_generic_item(self, item):
-        self._update_degrading_item(item, GENERIC_DEGRADE_FACTOR)
+        self._update_accelerating_item(item, GENERIC_FACTOR)
 
     def _update_conjured_item(self, item):
-        self._update_degrading_item(item, CONJURED_DEGRADE_FACTOR)
+        self._update_accelerating_item(item, CONJURED_FACTOR)
 
     def _update_aged_brie_item(self, item):
-        self._update_sell_in(item)
-        item.quality = min(MAXIMUM_QUALITY,item.quality+1)
+        self._update_accelerating_item(item, BRIE_FACTOR)
 
     def _update_backstage_passes(self, item):
         self._update_sell_in(item)
@@ -66,6 +66,9 @@ class GildedRose(object):
 
             case ItemName.CONJURED:
                 self._update_conjured_item(item)
+
+            case _:
+                self._update_generic_item(item)
 
     def update_quality(self):
         for item in self.items:
