@@ -1,19 +1,19 @@
 import pytest
 
 from gilded_rose import (
+    AgedBrieStrategy,
     BackstagePassStrategy,
+    ConjuredItemStrategy,
     GeneralItemStrategy,
-    ItemStrategyFactory,
+    ItemStrategyResolver,
     SulfurasStrategy,
 )
 
 
-def assert_strategy(item_name, expected_strategy, expected_multiplier=None):
-    strategy = ItemStrategyFactory.get_strategy(item_name)
+def assert_strategy(item_name, expected_strategy):
+    strategy = ItemStrategyResolver.get_strategy(item_name)
 
-    assert isinstance(strategy, expected_strategy)
-    if expected_multiplier is not None:
-        assert strategy.multiplier == expected_multiplier
+    assert type(strategy) is expected_strategy
 
 
 @pytest.mark.parametrize(
@@ -27,7 +27,7 @@ def assert_strategy(item_name, expected_strategy, expected_multiplier=None):
     ],
 )
 def test_aged_brie_matches(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, 1)
+    assert_strategy(item_name, AgedBrieStrategy)
 
 
 @pytest.mark.parametrize(
@@ -39,7 +39,7 @@ def test_aged_brie_matches(item_name):
     ],
 )
 def test_aged_brie_non_matches_use_generic_strategy(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, -1)
+    assert_strategy(item_name, GeneralItemStrategy)
 
 
 @pytest.mark.parametrize(
@@ -62,7 +62,7 @@ def test_sulfuras_matches(item_name):
     ],
 )
 def test_sulfuras_non_matches_use_generic_strategy(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, -1)
+    assert_strategy(item_name, GeneralItemStrategy)
 
 
 @pytest.mark.parametrize(
@@ -92,7 +92,7 @@ def test_backstage_passes_matches(item_name):
     ],
 )
 def test_backstage_passes_non_matches_use_generic_strategy(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, -1)
+    assert_strategy(item_name, GeneralItemStrategy)
 
 
 @pytest.mark.parametrize(
@@ -105,7 +105,7 @@ def test_backstage_passes_non_matches_use_generic_strategy(item_name):
     ],
 )
 def test_conjured_matches(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, -2)
+    assert_strategy(item_name, ConjuredItemStrategy)
 
 
 @pytest.mark.parametrize(
@@ -117,7 +117,7 @@ def test_conjured_matches(item_name):
     ],
 )
 def test_conjured_non_matches_use_generic_strategy(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, -1)
+    assert_strategy(item_name, GeneralItemStrategy)
 
 
 @pytest.mark.parametrize(
@@ -131,52 +131,45 @@ def test_conjured_non_matches_use_generic_strategy(item_name):
     ],
 )
 def test_generic_names_use_generic_strategy(item_name):
-    assert_strategy(item_name, GeneralItemStrategy, -1)
+    assert_strategy(item_name, GeneralItemStrategy)
 
 
 @pytest.mark.parametrize(
-    "item_name, expected_strategy, expected_multiplier",
+    "item_name, expected_strategy",
     [
         pytest.param(
             "Backstage passes to conjured brie",
             BackstagePassStrategy,
-            None,
             id="backstage-before-conjured",
         ),
         pytest.param(
             "Conjured backstage passes",
-            GeneralItemStrategy,
-            -2,
+            ConjuredItemStrategy,
             id="conjured-before-backstage",
         ),
         pytest.param(
             "Conjured brie",
-            GeneralItemStrategy,
-            -2,
+            ConjuredItemStrategy,
             id="conjured-before-brie",
         ),
         pytest.param(
             "backstage passess to sulfuras",
             BackstagePassStrategy,
-            None,
             id="backstage-and-sulfuras",
         ),
         pytest.param(
             "Sulfuras backstage passess",
             BackstagePassStrategy,
-            None,
             id="sulfuras-before-backstage",
         ),
         pytest.param(
             "Sulfuras backstage passess",
             BackstagePassStrategy,
-            None,
             id="duplicate-sulfuras-before-backstage",
         ),
         pytest.param(
             "Conjured aged brie",
-            GeneralItemStrategy,
-            -2,
+            ConjuredItemStrategy,
             id="conjured-before-aged-brie",
         ),
     ],
@@ -184,6 +177,5 @@ def test_generic_names_use_generic_strategy(item_name):
 def test_conflicting_names_follow_expected_precedence(
     item_name,
     expected_strategy,
-    expected_multiplier,
 ):
-    assert_strategy(item_name, expected_strategy, expected_multiplier)
+    assert_strategy(item_name, expected_strategy)
