@@ -76,7 +76,6 @@ def test_sulfuras_non_matches_use_generic_strategy(item_name):
         pytest.param("passes for backstage", id="reversed-words"),
         pytest.param("backstage pass - VIP", id="vip-suffix"),
         pytest.param("back stage passes", id="spaces-between-words"),
-        pytest.param("back stage pas ses", id="split-final-word"),
     ],
 )
 def test_backstage_passes_matches(item_name):
@@ -89,6 +88,7 @@ def test_backstage_passes_matches(item_name):
         pytest.param("passess", id="misspelling"),
         pytest.param("stage pass", id="partial-name"),
         pytest.param("backstage pas", id="truncated-name"),
+        pytest.param("back stage pas ses", id="split-final-word"),
     ],
 )
 def test_backstage_passes_non_matches_use_generic_strategy(item_name):

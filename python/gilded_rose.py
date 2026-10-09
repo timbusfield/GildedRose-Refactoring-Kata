@@ -1,5 +1,6 @@
 
 
+import re
 from abc import ABC, abstractmethod
 from enum import StrEnum
 from typing import ClassVar
@@ -80,13 +81,40 @@ class ItemStrategyFactory:
         ItemName.BACKSTAGE_PASSES: BackstagePassStrategy(),
         ItemName.SULFURAS: SulfurasStrategy(),
     }
+    
     _DEFAULT_STRATEGY = GeneralItemStrategy(multiplier=-1)
+    
+    _PATTERNS: ClassVar[tuple[tuple[re.Pattern[str], ItemName], ...]] = (
+        # Conjured must start the name, giving it priority in mixed names.
+        (re.compile(r"^\s*conjured\b", re.IGNORECASE), ItemName.CONJURED),
+        # Match backstage before passes or passes before backstage, allowing
+        # optional spaces within "backstage" and the tested pass spellings.
+        (
+            re.compile(
+                r"(?:\bback\s*stage\s*pass(?:es|ess)?\b"
+                r"|\bpass(?:es|ess)?\b.*\bback\s*stage\b)",
+                re.IGNORECASE,
+            ),
+            ItemName.BACKSTAGE_PASSES,
+        ),
+        # Match the Sulfuras word anywhere, but not similar words like "Sulfurous".
+        (re.compile(r"\bsulfuras\b", re.IGNORECASE), ItemName.SULFURAS),
+        # Match the "aged brie" phrase with optional spacing and any casing.
+        (
+            re.compile(
+                r"\baged\s*brie\b",
+                re.IGNORECASE,
+            ),
+            ItemName.AGED_BRIE,
+        ),
+    )
 
     @classmethod
     def get_strategy(cls, item_name: str) -> ItemUpdateStrategy:
-        # 1. Exact match in lookup map
-        # 2. Fall back to standard item behavior if unknown
-        return cls._STRATEGIES.get(item_name, cls._DEFAULT_STRATEGY)
+        for pattern, strategy_name in cls._PATTERNS:
+            if pattern.search(item_name):
+                return cls._STRATEGIES[strategy_name]
+        return cls._DEFAULT_STRATEGY
 
 
 
