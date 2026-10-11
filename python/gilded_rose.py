@@ -115,8 +115,14 @@ class GildedRose:
 
     def __init__(self, items):
         self.items = items
+        self._strategies = {}
 
     def update_quality(self):
         for item in self.items:
-            strategy = ItemStrategyResolver.get_strategy(item.name)
+            # check already assessed names
+            strategy = self._strategies.get(item.name)
+            if strategy is None:
+                # generate strategy for name if doesn't exist
+                strategy = ItemStrategyResolver.get_strategy(item.name)
+                self._strategies[item.name] = strategy
             strategy.update(item)
