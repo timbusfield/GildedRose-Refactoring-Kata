@@ -1,11 +1,12 @@
 
 
+import logging
 import re
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-MINIMUM_QUALITY = 0
-MAXIMUM_QUALITY = 50
+logger = logging.getLogger(__name__)
+
 
 class Item:
     def __init__(self, name, sell_in, quality):
@@ -17,19 +18,41 @@ class Item:
         return "%s, %s, %s" % (self.name, self.sell_in, self.quality)
 
 class ItemUpdateStrategy(ABC):
-    @abstractmethod
     def update(self, item):
+        previous_quality = item.quality
+        self._update(item)
+        self._validate_quality(item, previous_quality)
+
+    @abstractmethod
+    def _update(self, item):
         pass
 
+    def _validate_quality(self, item, previous_quality):
+        pass
+
+
 class QualityBoundedItemStrategy(ItemUpdateStrategy):
+    MINIMUM_QUALITY = 0
+    MAXIMUM_QUALITY = 50
+
+    def _validate_quality(self, item, previous_quality):
+        if not self.MINIMUM_QUALITY <= previous_quality <= self.MAXIMUM_QUALITY:
+            message = (
+                f"Items of type {type(self).__name__} expect item quality to be between "
+                f"{self.MINIMUM_QUALITY} and {self.MAXIMUM_QUALITY}; "
+                f"the item {item.name!r} had a quality of {previous_quality} before update, "
+                f"its quality has been updated to {item.quality}."
+            )
+            raise ValueError(message)
+
     def _keep_quality_within_limits(self, item):
-        item.quality = max(MINIMUM_QUALITY, min(MAXIMUM_QUALITY, item.quality))
+        item.quality = max(self.MINIMUM_QUALITY, min(self.MAXIMUM_QUALITY, item.quality))
 
 
 class RateBasedItemStrategy(QualityBoundedItemStrategy):
     quality_multiplier: ClassVar[int]
 
-    def update(self, item):
+    def _update(self, item):
         item.sell_in -= 1
         base_rate = 2 if item.sell_in < 0 else 1
         item.quality += base_rate * self.quality_multiplier
@@ -49,7 +72,7 @@ class ConjuredItemStrategy(RateBasedItemStrategy):
 
 
 class BackstagePassStrategy(QualityBoundedItemStrategy):
-    def update(self, item):
+    def _update(self, item):
         item.sell_in -= 1
         
         if item.sell_in < 0:
@@ -65,10 +88,21 @@ class BackstagePassStrategy(QualityBoundedItemStrategy):
 
 
 class SulfurasStrategy(ItemUpdateStrategy):
-    def update(self, item):
+    SULFURAS_QUALITY = 80
+
+    def _update(self, item):
         # Legendary item: never decreases in quality, never has to be sold
         pass
 
+    def _validate_quality(self, item, previous_quality):
+        if item.quality != self.SULFURAS_QUALITY:
+            message = (
+                "Items of type SulfurasStrategy expect item quality to be "
+                f"{self.SULFURAS_QUALITY}; the item {item.name!r} "
+                f"had a quality of {previous_quality} before update, "
+                f"its quality has been updated to {item.quality}."
+            )
+            raise ValueError(message)
 
 class ItemStrategyResolver:
     _PATTERNS: ClassVar[
@@ -125,4 +159,7 @@ class GildedRose:
                 # generate strategy for name if doesn't exist
                 strategy = ItemStrategyResolver.get_strategy(item.name)
                 self._strategies[item.name] = strategy
-            strategy.update(item)
+            try:
+                strategy.update(item)
+            except ValueError as error:
+                logger.warning("Updated the item %r; though the following warning was encountered: %s", item, error)
