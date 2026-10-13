@@ -10,6 +10,7 @@ SULFURAS = "Sulfuras, Hand of Ragnaros"
         (10, 80),
         (0, 80),
         (-10, 80),
+        (-10, 70),
     ],
 )
 def test_sulfuras_never_changes(sell_in, quality):
