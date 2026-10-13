@@ -7,7 +7,7 @@ Suggestion: create a python virtual environment for this project. See the [docum
 ## Run the unit tests from the Command-Line
 
 ```
-python -m unittest
+python -m pytest
 ```
 
 ## Run the TextTest fixture from the Command-Line

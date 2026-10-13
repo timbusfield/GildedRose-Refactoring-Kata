@@ -12,16 +12,10 @@ SULFURAS = "Sulfuras, Hand of Ragnaros"
         (-10, 80),
     ],
 )
-def test_sulfuras_never_changes(
-    sell_in,
-    quality,
-):
-    item = Item(SULFURAS, sell_in, quality)
-
-    original_sell_in = item.sell_in
-    original_quality = item.quality
+def test_sulfuras_never_changes(sell_in, quality):
+    item = Item(SULFURAS, sell_in=sell_in, quality=quality)
 
     GildedRose([item]).update_quality()
 
-    assert item.sell_in == original_sell_in
-    assert item.quality == original_quality
+    assert item.sell_in == sell_in
+    assert item.quality == quality

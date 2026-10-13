@@ -30,20 +30,21 @@ def test_generic_item_quality_degradation(
 
 
 @pytest.mark.parametrize(
-    "sell_in, quality",
+    "sell_in, quality, expected_quality",
     [
-        (10, 0),
-        (0, 0),
-        (-1, 0),
-        (-1, 1),
+        (10, 0, 0),
+        (0, 0, 0),
+        (-1, 0, 0),
+        (-1, 1, 0),
     ],
 )
 def test_generic_item_quality_never_negative(
     sell_in,
     quality,
+    expected_quality,
 ):
     item = Item("Generic Item", sell_in, quality)
 
     GildedRose([item]).update_quality()
 
-    assert item.quality >= 0
+    assert item.quality == expected_quality

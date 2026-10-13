@@ -32,20 +32,21 @@ def test_aged_brie_quality_increases(
 
 
 @pytest.mark.parametrize(
-    "sell_in, quality",
+    "sell_in, quality, expected_quality",
     [
-        (10, 50),
-        (0, 50),
-        (-1, 50),
-        (-1, 49),
+        (10, 50, 50),
+        (0, 50, 50),
+        (-1, 50, 50),
+        (-1, 49, 50),
     ],
 )
 def test_aged_brie_quality_never_exceeds_50(
     sell_in,
     quality,
+    expected_quality,
 ):
     item = Item(AGED_BRIE, sell_in, quality)
 
     GildedRose([item]).update_quality()
 
-    assert item.quality <= 50
+    assert item.quality == expected_quality
