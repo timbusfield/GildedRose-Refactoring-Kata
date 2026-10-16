@@ -1,0 +1,19 @@
+repos:
+  # Ruff linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.9 # Use the latest stable ruff version
+    hooks:
+      - id: ruff
+        args: [--fix] # Automatically fix fixable linter errors
+      - id: ruff-format # Automatically format code
+
+  # Local hook to run unit tests (e.g., pytest)
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: run unit tests
+        entry: .venv/Scripts/python.exe -m pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
